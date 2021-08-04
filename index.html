@@ -98,6 +98,127 @@
   
   
     <div class="col-12 col-md-8 m-auto">
+        <a href="/2021/08/03/SQL注入第四节之base64&SQL绕过/">
+            <p class="h4 index-header">SQL注入第四节之base64&amp;SQL绕过</p>
+            <div class="index-excerpt">
+              
+                <div class="index-text mb-1">base64注入攻击代码攻击• 在base64注入页面中，程序获取GET参数ID，利用base64_decode()对参数ID进行base64解码，然 后直接将解码后的$id拼接到select语句中进行查询，通过while循环将查询结果输出到页面。 
+• 由于代码没有过滤解码后的$id,且将$id直接拼接到SQL语句中，所以存在SQL注入漏洞。当访问 id=1 union select 1，2，3#（访问时，先进行base64编码）时，执行SQL语句为： 
+• 此时SQL语句可以分为select * from users where ‘id’=1 和 union select 1,2,3两条，利用第二条语句 (union查询)就可以获取数据库中的数据。 
+• 这种攻击方式还有其他利用场景。例如，如果有WAF，则WAF会对传输中的参数ID进行检查，但 由于传输中的ID经过base64编码，所以此时WAF很有可能检测不到危险代码，进而绕过了WAF检 测。 
+base64注入攻击的过程和union注入过程相同，只是要把id=后面的注入语句通过base64进行编码
+SQL绕过技术WAF介绍：W</div>
+              
+            </div>
+        </a>
+      
+      
+        <div>
+          <i class="iconfont icon-riqi2"></i>&nbsp;2021-08-03
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          
+        </div>
+      
+    </div>
+  </div>
+
+  <div class="row mb-4">
+  
+  
+    <div class="col-12 col-md-8 m-auto">
+        <a href="/2021/08/03/SQL注入第三节之堆叠&二次&宽字节&cookie/">
+            <p class="h4 index-header">SQL注入第三节之堆叠&amp;二次&amp;宽字节&amp;cookie</p>
+            <div class="index-excerpt">
+              
+                <div class="index-text mb-1">堆叠查询注入攻击• 正常sql语句：Select * from users where id=’1’; 
+• 注入sql语句：Select * from users where id=’1’;select if(length(database())&gt;5,sleep(5),1)%23; 
+• Payload= ‘;select if(length(database())&gt;5,sleep(5),1)%23 
+• Payload= ‘;select if(substr(user(),1,1)=’r’,sleep(3),1)%23 如此句：从堆叠注入语句中可以看出， 第二条SQL语句(select if(substr(user(),1,1)=’r’,sleep(3),1)%23就是时间盲注的语句。 
+• 堆叠注入和union的区别在于，union后只能跟select，而堆叠后面可以使用insert，update， create，delete等常规数据库语句
+ 堆叠注入实质：在?id=1后面使用 ；隔开再输入自己想要的语句
+如果没有报错的机制，或者没有显示数据位置，就可以使用时间盲注</div>
+              
+            </div>
+        </a>
+      
+      
+        <div>
+          <i class="iconfont icon-riqi2"></i>&nbsp;2021-08-03
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          
+        </div>
+      
+    </div>
+  </div>
+
+  <div class="row mb-4">
+  
+  
+    <div class="col-12 col-md-8 m-auto">
+        <a href="/2021/08/03/SQL注入第二节之Boolean&报错&时间/">
+            <p class="h4 index-header">SQL注入第二节之Boolean&amp;报错&amp;时间</p>
+            <div class="index-excerpt">
+              
+                <div class="index-text mb-1">Boolean 注入攻击（盲注）• 有些情况下，开发人员屏蔽了报错信息，导致攻击者无法通过报错信息进行注 入的判断。 这种情况下的注入，称为盲注。 盲注根据展现方式，分为boolean型盲注和时间型盲注。 
+• Boolean是基于真假的判断（true or false）; 不管输入什么，结果都只返回真或假两种情况； 通过and 1=1和and 1=2可以发现注入点。 
+• Boolean型盲注的关键在于通过表达式结果与已知值进行比对，根据比对结果判断正确与否。
+Boolean型盲注的判断方式有：  
+• 通过长度判断length(): length(database())&gt;=x  
+• 通过字符判断substr(): substr(database(),1,1) =‘s’ 
+• 通过ascII码判断:ascii(): ascii(substr(database(),1,1)) =x 
+Boolean注入判断• 访问id=1’ and ‘1’=‘1   或者id=1’ and 1=1%23 （%23为‘号的url编码，或者也可以–+注释掉 后面的’号） 
+• 访问id=1’ an</div>
+              
+            </div>
+        </a>
+      
+      
+        <div>
+          <i class="iconfont icon-riqi2"></i>&nbsp;2021-08-03
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          
+        </div>
+      
+    </div>
+  </div>
+
+  <div class="row mb-4">
+  
+  
+    <div class="col-12 col-md-8 m-auto">
+        <a href="/2021/08/03/SQL注入第一节之Union联合注入/">
+            <p class="h4 index-header">SQL注入第一节之Union联合注入</p>
+            <div class="index-excerpt">
+              
+                <div class="index-text mb-1">在线提供的渗透测试网站http://demo.testfire.net/  ：由IBM提供的测试环境，作为测试自家弱点扫描工具（AppScan）之用
+http://zero.webappsecurity.com/    ：zeroBank是HP提供的测试网站，可作为Fortify’sWebInspect（web安全加固评估）的测试评估目标。
+http://testasp.vulnweb.com/   
+http://testphp.vulnweb.com/   
+http://testaspnet.vulnweb.com/  
+由Acunetix 提供的作为Acunetix黑箱程序的测试网站，分别针对ASP、PHP、ASP.NET 的程序设计。
+线下靶场环境DVWA（Damn Vulnerable Web Application）：使用PHP+mysql编写的漏洞检测平台
+sqli：专门用于做注入的一个平台100多关SQL注入测试平台
+web学习靶场源码
+DoraBox-master：哆啦盒练习实战平台
+sql数据库语句mysql&gt; show databases;  //查看所有</div>
+              
+            </div>
+        </a>
+      
+      
+        <div>
+          <i class="iconfont icon-riqi2"></i>&nbsp;2021-08-03
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          
+        </div>
+      
+    </div>
+  </div>
+
+  <div class="row mb-4">
+  
+  
+    <div class="col-12 col-md-8 m-auto">
         <a href="/2019/09/04/第2篇：Linux入侵排查/">
             <p class="h4 index-header">Linux入侵排查</p>
             <div class="index-excerpt">
@@ -161,47 +282,6 @@ b、使</div>
       
         <div>
           <i class="iconfont icon-riqi2"></i>&nbsp;2019-09-04
-          &nbsp;&nbsp;&nbsp;&nbsp;
-          
-        </div>
-      
-    </div>
-  </div>
-
-  <div class="row mb-4">
-  
-  
-    <div class="col-12 col-md-8 m-auto">
-        <a href="/2019/08/21/sunyang/">
-            <p class="h4 index-header">SUNYANG</p>
-            <div class="index-excerpt">
-              
-                <div class="index-text mb-1">this is my blogs~$ hexo new &quot;My New Post&quot;
-More info: Writing
-Run server$ hexo server
-More info: Server
-Generate static files$ hexo generate
-More info: Generating
-Deploy to remote sites$ hexo deploy
-More info: Deployment
-$ hexo new &quot;My New Post&quot;
-More info: Writing
-Run server$ hexo server
-More info: Server
-Generate static files$ hexo generate
-More info: Generating
-Deploy to remote sites$ hexo deploy
-More info: Deployment
-$ hexo new &quot;My New Post&quot;
-More info: Writing
-Run</div>
-              
-            </div>
-        </a>
-      
-      
-        <div>
-          <i class="iconfont icon-riqi2"></i>&nbsp;2019-08-21
           &nbsp;&nbsp;&nbsp;&nbsp;
           
         </div>

