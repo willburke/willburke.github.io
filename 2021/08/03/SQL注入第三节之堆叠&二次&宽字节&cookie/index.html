@@ -106,19 +106,19 @@
 <p>如果没有报错的机制，或者没有显示数据位置，就可以使用时间盲注的方式来获取数据</p>
 <h3 id="二次注入攻击"><a href="#二次注入攻击" class="headerlink" title="二次注入攻击"></a>二次注入攻击</h3><p>二次注入攻击常用在：在一个页面有注册输入项，把输入的值通过注册的方式带进数据库。而在另一个页面查询带入的值，这样就可以做到查询出，或者改变数据库里面的内容。</p>
 <p>二次注入截图</p>
-<p><img src="file:///C:/Users/sky/AppData/Local/Temp/msohtmlclip1/01/clip_image001.png" alt></p>
+<p><img src="https://s3.bmp.ovh/imgs/2021/08/486f61f481304a04.png" alt></p>
 <h3 id="宽字节注入攻击"><a href="#宽字节注入攻击" class="headerlink" title="宽字节注入攻击"></a>宽字节注入攻击</h3><p>宽字节：GB2312、GBK、GB18030、BIG5、Shift_JIS等这些都是常说的宽字节，实际上只有两字节。宽字节带来的安全问题主要是吃ASCII字符(一字节)的现象，即将两个ascii字符误认为是一个宽字节字符。</p>
 <h4 id="宽字节输入原理："><a href="#宽字节输入原理：" class="headerlink" title="宽字节输入原理："></a>宽字节输入原理：</h4><p>GBK 占用两字节</p>
 <p>ASCII占用一字节</p>
 <p>PHP中编码为GBK，函数执行添加的是ASCII编码（添加的符号为“\”），MYSQL默认字符集是GBK等宽字节字符集。</p>
 <p>大家都知道%df’ 被PHP转义（开启GPC、用addslashes函数，或者icov等），单引号被加上反斜杠\，变成了 %df\’，其中\的十六进制是 %5C ，那么现在 %df\’ =%df%5c%27，如果程序的默认字符集是GBK等宽字节字符集，则MySQL用GBK的编码时，会认为 %df%5c 是一个宽字符，也就是運，也就是说：%df\’ = %df%5c%27=運’，有了单引号就好注入了。</p>
 <p>宽字节注入实质：在特殊符号（如’ “ &amp;）前面加入转义符”&quot;，达到注释特殊符号的目的</p>
-<p><img src="file:///C:/Users/sky/AppData/Local/Temp/msohtmlclip1/01/clip_image001.png" alt></p>
+<p><img src="https://s3.bmp.ovh/imgs/2021/08/69fff620110c9ceb.png" alt></p>
 <p>在宽字节注入中，因为页面直接显示了数据库中的内容，所以可以使用union查询，否则就需要采取时间盲注或其他的方式拿到数据库的内容。</p>
 <h3 id="cookie注入攻击"><a href="#cookie注入攻击" class="headerlink" title="cookie注入攻击"></a>cookie注入攻击</h3><p>• 发现URL中没有GET参数，但是页面返回正常，使用Burp抓取数据包，发现cookie中存在 id=1的参数</p>
 <p>在这里我们直接使用brup抓包修改请求包数据就可以进行注入攻击</p>
 <p>举一反三，我们发现了显示位，就可以直接union联合查询注入。如果没有显示位，就要想其他的办法进行注入</p>
-<p><img src="file:///C:/Users/sky/AppData/Local/Temp/msohtmlclip1/01/clip_image001.png" alt></p>
+<p><img src="https://s3.bmp.ovh/imgs/2021/08/dc8e7c22926602f7.png" alt></p>
 
                     <hr>
                     <div>
